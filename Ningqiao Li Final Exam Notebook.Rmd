@@ -12,7 +12,6 @@ This is final exam report of EDRM 718 created by Ningqiao Li
 
 ### 1. Tidy the data and merge them into one csv file.
 #### 1.1 Tidy the Job Prep Demographics
-
 ##### 1.1.1 Install package first, and manually save the data file as csv format.
 ```{r include=FALSE}
 library(tidyverse)
@@ -114,6 +113,7 @@ colSums(is.na(tidydata))
 
 
 ***
+
 
 ### 2. Compute the average GPA.
 #### 2.1 Visually display the consistency of first and second semester GPA
@@ -235,10 +235,17 @@ corr_bygroup <- by(new_dataset, new_dataset$Discipline,
                    FUN = function(X) cor(X$AVEGPA, X$Optimism, method = "spearman")) 
 
 # how to make it show the p value?
+
+new_dataset %>%
+group_by(Discipline) %>%
+summarize(cor(AVEGPA, Optimism))
+# this one just output one general correlation coeficients, why?
+
 ```
 
 
 ***
+
 
 ### 5. Response to research Q3,
 ### Is the level of optimism different for different categories of disciplines?
@@ -262,6 +269,7 @@ pairwise.t.test(new_dataset$Optimism, new_dataset$Discipline,
 # the result of two methods confirm that at 95 confidence level, there is no significant difference between the pairs.
 # except the mean difference between social science and applied science is different at 10% significance level.
 ```
+
 
 
 
