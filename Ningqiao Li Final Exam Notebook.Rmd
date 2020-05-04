@@ -268,6 +268,7 @@ pairwise.t.test(new_dataset$Optimism, new_dataset$Discipline,
                 p.adjust.method = "BH")
 # the result of two methods confirm that at 95 confidence level, there is no significant difference between the pairs.
 # except the mean difference between social science and applied science is different at 10% significance level.
+# Meanwhile, the 95% confidence intervel is construct as the TukeyHSD function shows.
 ```
 
 
