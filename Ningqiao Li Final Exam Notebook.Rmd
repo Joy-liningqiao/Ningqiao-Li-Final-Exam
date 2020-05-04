@@ -1,0 +1,269 @@
+---
+title: "EDRM 718 Final Exam"
+author: "Ningqiao Li"
+date: "May 4th, 2020"
+output: html_notebook
+---
+
+
+This is final exam report of EDRM 718 created by Ningqiao Li
+
+***
+
+### 1. Tidy the data and merge them into one csv file.
+#### 1.1 Tidy the Job Prep Demographics
+
+##### 1.1.1 Install package first, and manually save the data file as csv format.
+```{r include=FALSE}
+library(tidyverse)
+library(here)
+```
+
+
+##### 1.1.2 Tidy the data then
+```{r}
+demographics <- read_csv("Job Prep Demographics.csv", skip = 4,
+                         col_types = cols(HUMANITIES = col_double(),
+                                          X2 = col_double(),
+                                          X3 = col_double(),
+                                          X4 = col_factor()))
+View(demographics)
+demographics$X5 <- NULL
+```
+
+
+##### 1.1.3 Split the dataset into five subsets.
+```{r}
+demographics1 <- demographics %>%
+  filter(between(row_number(), 3, 140)) %>%
+  mutate(discipline = "Humanities")
+
+demographics2 <- demographics %>%
+  filter(between(row_number(), 146, 298)) %>%
+  mutate(discipline = "SocialSci")
+
+demographics3 <- demographics %>%
+  filter(between(row_number(), 304, 458)) %>%
+  mutate(discipline = "NaturalSci")
+
+demographics4 <- demographics %>%
+  filter(between(row_number(), 464, 612)) %>%
+  mutate(discipline = "FormalSci")
+
+demographics5 <- demographics %>%
+  filter(between(row_number(), 618, 761)) %>%
+  mutate(discipline = "AppliedSci") 
+```
+
+
+##### 1.1.4 Merge the five tidy subsets. 
+```{r}
+newdemo <- rbind(demographics1, demographics2, demographics3, demographics4, demographics5)  
+colnames(newdemo) = c("ID", "SchoolCode", "Age", "Gender", "Discipline") 
+  
+(newdemo <- newdemo %>%
+  arrange(ID))
+```
+
+
+#### 1.2 Tidy the Job Prep GPA Data
+```{r}
+GPA <- read_csv("Job Prep GPA Data.csv", skip = 5,
+                col_names = c("ID", "SchoolCode", "Age", "Gender", 
+                             "CreditsS1", "GPAS1", "CreditsS2", "GPAS2"))
+(GPA <- GPA %>%
+    arrange(ID))
+```
+
+
+#### 1.3 Join the two datasets
+```{r}
+merge1 <- GPA %>%
+  left_join(newdemo, c("ID" = "ID", "SchoolCode" = "SchoolCode", "Age" = "Age", "Gender" = "Gender"))
+```
+
+
+#### 1.4 Tidy the Job Prep Survey Results
+```{r}
+survey <- read_csv("Job Prep Survey Results.csv", skip = 3)
+# employ the sourced new_survey_data function to account for reverse score.
+newsurvey <- new_survey_data(survey, 6, c(5, 10, 13, 14))  
+newsurvey
+newsurvey[, 2:15] <- NULL
+newsurvey
+```
+
+
+#### 1.5 Merge the survey data to the merge1 dataset, thus all three original datasets are tidy and merged into one dataset.
+```{r}
+(tidydata <- newsurvey %>%
+  left_join(merge1, c("ID" = "ID")) %>%
+    arrange(ID))
+
+# rename the Sum to as Optimism
+tidydata <- tidydata %>%
+  rename(Optimism = Sum)
+tidydata
+
+# check for NA data
+colSums(is.na(tidydata))
+(tidydata <- tidydata %>%
+  drop_na(SchoolCode))
+
+```
+
+
+***
+
+### 2. Compute the average GPA.
+#### 2.1 Visually display the consistency of first and second semester GPA
+```{r}
+# gather data first
+(tidydata1 <- tidydata %>%
+  gather(GPAS1, GPAS2,
+         key = Semester,
+         value = GPA))
+
+# boxplot
+tidydata1 %>%
+  ggplot(aes(Semester, GPA)) +
+  geom_boxplot() +
+  labs(title = "Comparison between GPA of two semesters")
+
+# descriptive statistics
+tapply(tidydata1$GPA, tidydata1$Semester, summary)
+
+# independent t test
+t.test(tidydata1$GPA ~ tidydata1$Semester, pair = TRUE)
+
+# The result of descriptive statistics shows that the two groups have similar mean and median value,
+# the t test confirms that there is no significant difference between GPA in semester 1 and semester 2. 
+# Based on the boxplot, descriptive statistics and t test, we can conclude that the GAP in two semesters are consistent.
+```
+
+
+#### 2.2 Exclude the students with ... ten percent largest residuals
+```{r}
+# spread data
+(tidydata <- tidydata1 %>%
+  spread(key = Semester, value = GPA))
+
+
+# using GPAS1 to predict GPAS2 to obtain the residuals
+tidydata %>%
+  ggplot(aes(x = GPAS1, y = GPAS2)) +
+  geom_point() +
+  stat_smooth(method = "lm", se = FALSE)
+
+# employ the function to obtain residuals and exclude the students with the 10% largest value of residual, 
+# and then generate a new dataset.
+new_dataset <- obtain_residual(tidydata, tidydata$GPAS1, tidydata$GPAS2, 0.1)
+new_dataset
+
+# highlight those students with large value in plot.
+scatter_plot <- plot(tidydata$GPAS1 ~ tidydata$GPAS2,
+                     main = "Regression predicting", 
+                     xlab = "GPA of the first semester", ylab="GPA of the second semester",
+                     col = ifelse(new_dataset$result_res,"black","red"))   # no red point, why?
+
+abline(lm(GPAS2 ~ GPAS1, data = tidydata), col = "red")
+```
+
+
+#### 2.3 weighted average GPA
+```{r}
+new_dataset$result_res <- NULL
+new_dataset$result_res_abs <- NULL
+
+(new_dataset <- new_dataset %>%
+mutate(AVEGPA = (GPAS1 * CreditsS1 + GPAS2 * CreditsS2)/(CreditsS1 + CreditsS2)))
+```
+
+
+***
+
+
+### 3. Response to research Q1, 
+### Is senior-year grade point average (GPA) related to the degree of optimism about future employment?
+
+```{r}
+# use correlation test whether average GPA is correlated with the degree of optimism.
+cor.test(new_dataset$AVEGPA, new_dataset$Optimism)
+
+# visualize the correlation
+library(ggpubr)
+ggscatter(new_dataset,
+          x = "AVEGPA", y = "Optimism",
+          add = "reg.line", conf.int = TRUE,
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "Average GPA", ylab = "Optimism of graduation",
+          title = "Correlation between average GPA and graduation optimism")
+
+# Based on the scatterplot and the p value of pearson correlation, 
+# there is no significant correlation relationship between average GPA and the degree of optimism about future employment.
+
+MODEL <- lm(new_dataset$Optimism ~ new_dataset$AVEGPA)
+summary(MODEL)
+
+# In addition, from the result of sample linear regression, the insignificant coeficient of explanatory variable also 
+# confirms the previous conclusion.
+
+```
+
+
+***
+
+
+### 4. Response to research Q2,
+### Is the relationship of GPA and optimism consistent or different for different categories of disciplines?
+
+```{r}
+
+# plot a graph first to see the relationship between GPA and optimism by different categories.
+new_dataset %>%
+  ggplot(aes(x = AVEGPA, y = Optimism)) +
+  geom_point() +
+  stat_smooth(method = "lm", se = FALSE) +
+  facet_wrap(~ Discipline)
+# from the graph we can see that the relationship presents slightly positive trend in Applied Science, Humanities, 
+# Social Science, and a slightly negative relationship in Formal Science and Natural Science.However, we still do 
+# the correlation test to confirm the relationship.
+
+
+# test the correlation among different categoires.
+corr_bygroup <- by(new_dataset, new_dataset$Discipline, 
+                   FUN = function(X) cor(X$AVEGPA, X$Optimism, method = "spearman")) 
+
+# how to make it show the p value?
+```
+
+
+***
+
+### 5. Response to research Q3,
+### Is the level of optimism different for different categories of disciplines?
+
+```{r}
+# descriptive statistics
+tapply(new_dataset$Optimism, new_dataset$Discipline, summary)
+
+# omnibus hypotheses test by ANOVA
+anova(lm(new_dataset$Optimism ~ new_dataset$Discipline))
+# the result shows that at 5% significance level, difference doesn't exist among diffent categories of disciplines regarding level of optimism with 95% confidence. 
+
+# next compute Tukey HSD to perform multiple pairwise-comparison between the means of groups
+# method 1
+aovresult <- aov(Optimism ~ Discipline, data = new_dataset)
+TukeyHSD(aovresult)
+
+# method 2
+pairwise.t.test(new_dataset$Optimism, new_dataset$Discipline,
+                p.adjust.method = "BH")
+# the result of two methods confirm that at 95 confidence level, there is no significant difference between the pairs.
+# except the mean difference between social science and applied science is different at 10% significance level.
+```
+
+
+
+
+
