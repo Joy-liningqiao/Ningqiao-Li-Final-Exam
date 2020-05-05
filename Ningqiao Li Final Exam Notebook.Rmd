@@ -86,6 +86,7 @@ merge1 <- GPA %>%
 ```{r}
 survey <- read_csv("Job Prep Survey Results.csv", skip = 3)
 # employ the sourced new_survey_data function to account for reverse score.
+source(here("Functions", "Reverse Survey Score.R"))
 newsurvey <- new_survey_data(survey, 6, c(5, 10, 13, 14))  
 newsurvey
 newsurvey[, 2:15] <- NULL
