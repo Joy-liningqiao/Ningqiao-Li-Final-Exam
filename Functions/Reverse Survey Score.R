@@ -1,5 +1,3 @@
-library(here)
-source(here("Functions", "Reverse Survey Score.R"))
 
 new_survey_data <- function(survey_data, scale_number, reverse_vec){
   as.matrix(survey_data)

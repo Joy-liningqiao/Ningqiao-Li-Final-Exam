@@ -128,17 +128,17 @@ merge1 %>%
 
 # employ the function to obtain residuals and exclude the students with the 10% largest value of residual, 
 # and then generate a new dataset.
-
+source(here("Functions", "Exclude Data by Residual.R"))
 dataset_exclude <- obtain_residual(merge1, merge1$GPAS1, merge1$GPAS2, 0.1)
 dataset_exclude
 
-# highlight those students with large value in plot.
-scatter_plot <- plot(dataset_exclude$GPAS1 ~ dataset_exclude$GPAS2,
+# highlight those students with large residual value in plot.
+scatter_plot <- plot(merge1$GPAS1 ~ merge1$GPAS2,
                      main = "Table 3. Regression predicting", 
                      xlab = "GPA of the first semester", ylab="GPA of the second semester",
-                     col = ifelse(dataset_exclude$result_res,"black","red"))   # no red point, why?
+                     col = ifelse(dataset_exclude$result_res,"black","red"))   # still no red point. :(
 
-abline(lm(GPAS2 ~ GPAS1, data = dataset_exclude), col = "red")
+abline(lm(GPAS2 ~ GPAS1, data = merge1), col = "red")
 ```
 
 
