@@ -98,7 +98,7 @@ merge1 <- GPA %>%
 merge2 %>%
   ggplot(aes(Semester, GPA)) +
   geom_boxplot() +
-  labs(title = "Comparison between GPA of two semesters")
+  labs(title = "Table 1. Comparison between GPA of two semesters")
 
 # descriptive statistics
 tapply(merge2$GPA, merge2$Semester, summary)
@@ -123,6 +123,7 @@ t.test(merge2$GPA ~ merge2$Semester, pair = TRUE)
 merge1 %>%
   ggplot(aes(x = GPAS1, y = GPAS2)) +
   geom_point() +
+  labs(title = "Table 2. Relationship between GPAS1 and GPAS2") +
   stat_smooth(method = "lm", se = FALSE)
 
 # employ the function to obtain residuals and exclude the students with the 10% largest value of residual, 
@@ -133,7 +134,7 @@ dataset_exclude
 
 # highlight those students with large value in plot.
 scatter_plot <- plot(dataset_exclude$GPAS1 ~ dataset_exclude$GPAS2,
-                     main = "Regression predicting", 
+                     main = "Table 3. Regression predicting", 
                      xlab = "GPA of the first semester", ylab="GPA of the second semester",
                      col = ifelse(dataset_exclude$result_res,"black","red"))   # no red point, why?
 
@@ -203,7 +204,7 @@ ggscatter(new_dataset,
           add = "reg.line", conf.int = TRUE,
           cor.coef = TRUE, cor.method = "pearson",
           xlab = "Average GPA", ylab = "Optimism of graduation",
-          title = "Correlation between average GPA and graduation optimism")
+          title = "Table 4. Correlation between average GPA and graduation optimism")
 
 # Based on the scatterplot and the p value of pearson correlation, 
 # there is no significant correlation relationship between average GPA and the degree of optimism about future employment.
