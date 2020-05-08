@@ -1,0 +1,54 @@
+Ningqiao Li
+
+General comments:
+
+You are becoming an excellent R coder! Continuing to work on your coding, as well as proper documentation,
+will serve you well throughout your professional career. This was a tough project, but you handled it well.
+Given more time, I know you would have done even better! I encourage you to keep using R and the
+associated tools in your work. You will get better and better at it and will be glad that you stuck with it.
+It has been a pleasure having you in the course this semester.
+
+Total score: 75
+
+
+
+Reproducibilty: 7
+
+Correctly initiated a repo, established a .gitignore file, and tracked the project, though the tracking descriptions
+do not provide any information about each commit. Readme file is sparse and not descriptive for outsiders.
+
+Neatness: 7
+
+A well-formatted project with some appropriate narrative, though this is often embedded in code chunks rather than as
+notebook narrative. More documentation would have been helpful. Adherence to the style guide throughout the notebook.
+Very clean, readable output.
+
+Functions: 12
+
+Functions work correctly and are sourced in (though would have been better sourced at the top of the notebook).
+Arguments and output are not documented.
+
+Data prep: 7
+
+All data read in, but did not check primary keys so did not find bad key in GPA. Removed highest residuals and
+joined all files. ID included in Likert scale sum calculation, so all survey data is incorrect.
+
+Graphs: 11
+
+Graphs are attractive, well-labeled, and appropriate for investigating the research questions. No graph to show high
+residuals. No graph for third research question.
+
+Descriptive statistics: 15
+
+Descriptive statistics are well-chosen and correct. They are nicely tabled to provide further details about what is
+displayed in the graph. Statistics answer the research questions.
+
+Inferential statistics: 13
+
+Inferential statistics are correctely calculated and interpreted. No inferential statistics used for question #2,
+though you could have looked at the analysis of variance to determine if there is interaction of GPA and discipline.
+
+Team collaboration: 3
+
+Pull request to master instead of development. Subsequently, could not file notebook that was on development branch.
+Productive recommendations included.
